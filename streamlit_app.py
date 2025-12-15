@@ -79,11 +79,9 @@ time_gps = gps_data_clean['Time (s)'].values
 
 average_velocity = np.mean(velocities[velocities > 0])  # Poista nollanopeudet
 
-# Laske matka integroimalla nopeus ajan suhteen
-total_distance = 0
-for i in range(len(time_gps) - 1):
-    time_diff = time_gps[i+1] - time_gps[i]
-    total_distance += velocities[i] * time_diff
+# Lasketaan matka integroimalla nopeus
+distances = np.diff(time_gps) * velocities[:-1]
+total_distance = np.sum(distances)
 
 # 4. ASKELPITUUS
 step_length = total_distance / max(step_count_filtered, 1)
