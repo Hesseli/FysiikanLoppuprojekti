@@ -16,8 +16,14 @@ try:
     acceleration_data = pd.read_csv("Data/LoppuKiihtyvyys.csv")
     gps_data = pd.read_csv("Data/LoppuPaikannus.csv")
 except FileNotFoundError:
-    st.error("Data-tiedostoja ei löydy. Varmista, että Data-hakemisto on oikein sijoitettu.")
-    st.stop()
+    # Jos paikallinen tiedosto ei löydy, kokeile GitHub-repositoriota
+    try:
+        repo_url = "https://raw.githubusercontent.com/Hesseli/FysiikanLoppuprojekti/main/"
+        acceleration_data = pd.read_csv(repo_url + "Data/LoppuKiihtyvyys.csv")
+        gps_data = pd.read_csv(repo_url + "Data/LoppuPaikannus.csv")
+    except:
+        st.error("Data-tiedostoja ei löydy. Varmista, että Data-hakemisto on oikein sijoitettu.")
+        st.stop()
 
 # Puhdista GPS-data
 gps_data_clean = gps_data.dropna(subset=['Latitude (°)', 'Longitude (°)', 'Velocity (m/s)'])
