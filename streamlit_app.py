@@ -6,20 +6,6 @@ from scipy.fft import fft, fftfreq
 import folium
 from streamlit_folium import st_folium
 import matplotlib.pyplot as plt
-from math import radians, cos, sin, asin, sqrt
-
-# Haversine-kaava matkan laskentaan
-def haversine(lat1, lon1, lat2, lon2):
-    """
-    Lasketaan kahden pisteen välinen etäisyys (km)
-    """
-    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-    c = 2 * asin(sqrt(a))
-    r = 6371  # Maan säde km
-    return c * r * 1000  # Palautetaan metreissa
 
 # Asetetaan sivun konfiguraatio
 st.set_page_config(page_title="Liikuntadatan Analyysi", layout="wide")
@@ -90,16 +76,14 @@ step_count_fft = int(dominant_step_freq * acceleration_data['Time (s)'].iloc[-1]
 # 3. KESKINOPEUS JA MATKA (GPS-datasta)
 velocities = gps_data_clean['Velocity (m/s)'].values
 time_gps = gps_data_clean['Time (s)'].values
-lats = gps_data_clean['Latitude (°)'].values
-lons = gps_data_clean['Longitude (°)'].values
 
 average_velocity = np.mean(velocities[velocities > 0])  # Poista nollanopeudet
 
-# Laske matka Haversine-kaavalla
+# Laske matka integroimalla nopeus ajan suhteen
 total_distance = 0
-for i in range(len(lats) - 1):
-    dist = haversine(lats[i], lons[i], lats[i+1], lons[i+1])
-    total_distance += dist
+for i in range(len(time_gps) - 1):
+    time_diff = time_gps[i+1] - time_gps[i]
+    total_distance += velocities[i] * time_diff
 
 # 4. ASKELPITUUS
 step_length = total_distance / max(step_count_filtered, 1)
